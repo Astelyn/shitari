@@ -53,7 +53,7 @@ void cpu_run(int cycles)
     while (cycles_left > 0) {
         opcode = mmu_read(REG_PC++);
 
-        switch (OPCODE) {
+        switch (opcode) {
             /* Storage */
             case 0xA9: // LDA IMM
                 break;

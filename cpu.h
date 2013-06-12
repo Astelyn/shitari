@@ -1,15 +1,8 @@
 #ifndef _CPU_H
 #define _CPU_H
 
-#include <stdint.h>
-/* #include "mmu.h" */
-
-typedef uint8_t BYTE;  /* Move these somewhere else later */
-typedef uint16_t WORD;
-typedef uint32_t DWORD;
-typedef int BOOL;
-#define TRUE  1
-#define FALSE 0
+#include "common.h"
+#include "mmu.h"
 
 #define REG_A  (cpu.a)
 #define REG_X  (cpu.x)

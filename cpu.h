@@ -50,41 +50,41 @@
 
 // Absolute -- [nnnn]
 #define FETCH_ABS() \
-    oper_addr = (WORD)mmu_read(REG_PC) \
-              | ((WORD)mmu_read(REG_PC + 1) << 8); \
+    oper_addr = mmu_read(REG_PC) \
+              | (mmu_read(REG_PC + 1) << 8); \
     REG_PC += 2; \
     operand = mmu_read(oper_addr)
 
 // Absolute, X -- [nnnn + X]
 #define FETCH_ABX() \
-    oper_addr = ((WORD)mmu_read(REG_PC) \
-              | ((WORD)mmu_read(REG_PC + 1) << 8)) \
+    oper_addr = (mmu_read(REG_PC) \
+              | (mmu_read(REG_PC + 1) << 8)) \
               + (WORD)REG_X; \
     REG_PC += 2; \
     operand = mmu_read(oper_addr)
 
 // Absolute, Y -- [nnnn + Y]
 #define FETCH_ABY() \
-    oper_addr = ((WORD)mmu_read(REG_PC) \
-              | ((WORD)mmu_read(REG_PC + 1) << 8)) \
+    oper_addr = (mmu_read(REG_PC) \
+              | (mmu_read(REG_PC + 1) << 8)) \
               + (WORD)REG_Y; \
     REG_PC += 2; \
     operand = mmu_read(oper_addr)
 
 // Indirect -- [[nn]]
 #define FETCH_IND() \
-    oper_addr = (WORD)mmu_read((WORD)mmu_read(REG_PC++)); \
+    oper_addr = mmu_read(mmu_read(REG_PC++)); \
     operand = mmu_read(oper_addr)
 
 // (Indirect, X) -- [[nn + X]]
 #define FETCH_INX() \
-    oper_addr = (WORD)mmu_read((WORD)mmu_read(REG_PC++)) \
+    oper_addr = mmu_read(mmu_read(REG_PC++)) \
               + (WORD)REG_X; \
     operand = mmu_read(oper_addr)
 
 // (Indirect), Y -- [[nn] + Y]
 #define FETCH_INY() \
-    oper_addr = (WORD)mmu_read((WORD)mmu_read(REG_PC++)); \
+    oper_addr = mmu_read(mmu_read(REG_PC++)); \
     operand = mmu_read(oper_addr + (WORD)REG_Y);
 
 /* Status flag mutators */

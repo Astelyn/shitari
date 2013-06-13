@@ -1,14 +1,20 @@
 #include "cpu.h"
 
+/* Global CPU structure */
 cpu_t cpu;
 
+/* Helper variables */
 static BYTE opcode;
 static BYTE operand;
 static WORD oper_addr;
+static WORD result;
 static int cycles_left;
 
+/* Number of cycles for each instruction,
+ * indexed by opcode
+ */
 static int timings[256] = {
-/*     |0 |1 |2 |3 |4 |5 |6 |7 |8 |9 |A |B |C |D |E |F |*/
+/*    |0 |1 |2 |3 |4 |5 |6 |7 |8 |9 |A |B |C |D |E |F |*/
 /* 0 */ 7, 6, 2, 8, 3, 3, 5, 5, 3, 2, 2, 2, 4, 4, 6, 6,
 /* 1 */ 2, 5, 2, 8, 4, 4, 6, 6, 2, 4, 2, 7, 4, 4, 7, 7,
 /* 2 */ 6, 6, 2, 8, 3, 3, 5, 5, 4, 2, 2, 2, 4, 4, 6, 6,

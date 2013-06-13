@@ -1,7 +1,6 @@
 /* This is where the current opcode is
  * decoded -- this file is included within
  * a switch construct in cpu.c.
- * TODO: Should operand be a BYTE, WORD, or int?
  */
 
 /* Storage */
@@ -110,23 +109,35 @@ case 0x79: FETCH_ABY(); goto ADC;     // ADC ABSY
 case 0x61: FETCH_INX(); goto ADC;     // ADC INDX
 case 0x71: FETCH_INY();               // ADC INDY
 ADC:                                  // Add with Carry
-    REG_A = REG_A + operand
-            + (REG_S & FLAG_C);
-    CALC_C(REG_A);
-    CALC_Z(REG_A);
-    CALC_V(REG_A);
-    CALC_S(REG_A);
-    //TODO: NES-specific stuff
+    result = REG_A + operand
+           + (REG_S & FLAG_C);
+    REG_A = (BYTE)(result & 0x00FF);
+    CALC_C(result);
+    CALC_Z(result);
+    CALC_V(result);
+    CALC_S(result);
+#ifndef NO_DECIMAL
+    if (REG_S & FLAG_D) {
+        CLR_C();
+        if ((REG_A & 0x0F) > 0x09)
+            REG_A += 0x06;
+        if ((REG_A & 0xF0) > 0x90) {
+            REG_A += 0x60;
+            SET_C();
+        }
+        cycles_left--;
+    }
+#endif
     break;
 
 case 0xD6: FETCH_ZPX(); goto DEC;     // DEC ZPX
 case 0xCE: FETCH_ABS(); goto DEC;     // DEC ABS
 case 0xDE: FETCH_ABX();               // DEC ABSX
 DEC:                                  // Decrement operand by 1
-    tmp = operand - 1;
-    mmu_write(oper_addr, tmp);
-    CALC_Z(tmp);
-    CALC_S(tmp);
+    result = operand - 1;
+    mmu_write(oper_addr, (BYTE)(result & 0x00FF));
+    CALC_Z(result);
+    CALC_S(result);
     break;
 
 case 0xCA:                            // DEX
@@ -146,10 +157,10 @@ case 0xF6: FETCH_ZPX(); goto INC;     // INC ZPX
 case 0xEE: FETCH_ABS(); goto INC;     // INC ABS
 case 0xFE: FETCH_ABX();               // INC ABSX
 INC:                                  // Increment operand by 1
-    tmp = operand + 1;
-    mmu_write(oper_addr, tmp);
-    CALC_Z(tmp);
-    CALC_S(tmp);
+    result = operand + 1;
+    mmu_write(oper_addr, (BYTE)(result & 0x00FF));
+    CALC_Z(result);
+    CALC_S(result);
     break;
 
 case 0xE8:                            // INX
@@ -173,12 +184,24 @@ case 0xF9: FETCH_ABY(); goto SBC;     // SBC ABSY
 case 0xE1: FETCH_INX(); goto SBC;     // SBC INDX
 case 0xF1: FETCH_INY();               // SBC INDY
 SBC:                                  // Subtract with Carry
-    REG_A = REG_A + (operand ^ 0xFF)
-            + (REG_S & FLAG_C);
-    CALC_C(REG_A);
-    CALC_Z(REG_A);
-    CALC_V(REG_A);
-    CALV_S(REG_A);
+    result = REG_A + (operand ^ 0xFF)
+           + (REG_S & FLAG_C);
+    REG_A = (BYTE)(result & 0x00FF);
+    CALC_C(result);
+    CALC_Z(result);
+    CALC_V(result);
+    CALV_S(result);
+#ifndef NO_DECIMAL
+    CLR_C();
+    REG_A -= 0x66;
+    if ((REG_A & 0x0F) > 0x09)
+        REG_A += 0x06;
+    if ((REG_A & 0xF0) > 0x90) {
+        REG_A += 0x60;
+        SET_C();
+    }
+    cycles_left--;
+#endif
     break;
 
 /* Bitwise */
@@ -202,19 +225,19 @@ case 0x16: FETCH_ZPX(); goto ASL;     // ASL ZPX
 case 0x0E: FETCH_ABS(); goto ASL;     // ASL ABS
 case 0x1E: FETCH_ABX();               // ASL ABSX
 ASL:                                  // Shift operand left 1 bit
-    tmp = operand << 1;
-    mmu_write(oper_addr, tmp);
-    CALC_C(tmp);
-    CALC_Z(tmp);
-    CALC_S(tmp);
+    result = operand << 1;
+    mmu_write(oper_addr, (BYTE)(result & 0x00FF));
+    CALC_C(result);
+    CALC_Z(result);
+    CALC_S(result);
     break;
 
 case 0x24: FETCH_ZPG(); goto BIT;     // BIT ZP
 case 0x2C: FETCH_ABS();               // BIT ABS
-BIT:                                  // TODO
+BIT:                                  // TODO: Description
     CALC_Z(REG_A & operand);
     REG_S = (REG_S & 0x3F)
-          | (REG_A & 0xC0);
+          | (operand & 0xC0);
     break;
 
 case 0x49: FETCH_IMM(); goto EOR;     // EOR IMM

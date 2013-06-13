@@ -8,7 +8,7 @@ typedef struct {
     // TODO: More will go here later
 } mmu_t;
 
-BYTE mmu_read(WORD addr);
+WORD mmu_read(WORD addr);
 void mmu_write(WORD addr, BYTE val);
 
 #endif

@@ -234,7 +234,7 @@ ASL:                                  // Shift operand left 1 bit
 
 case 0x24: FETCH_ZPG(); goto BIT;     // BIT ZP
 case 0x2C: FETCH_ABS();               // BIT ABS
-BIT:                                  // TODO: Description
+BIT:                                  // Test bit #(operand) in A
     CALC_Z(REG_A & operand);
     REG_S = (REG_S & 0x3F)
           | (operand & 0xC0);

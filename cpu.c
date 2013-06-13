@@ -3,8 +3,8 @@
 cpu_t cpu;
 
 static BYTE opcode;
+static BYTE operand;
 static WORD oper_addr;
-static WORD operand;
 static int cycles_left;
 
 static int timings[256] = {

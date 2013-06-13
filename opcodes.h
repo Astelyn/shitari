@@ -1,3 +1,9 @@
+/* This is where the current opcode is
+ * decoded -- this file is included within
+ * a switch construct in cpu.c.
+ * TODO: Should operand be a BYTE, WORD, or int?
+ */
+
 /* Storage */
 case 0xA9: FETCH_IMM(); goto LDA;     // LDA IMM
 case 0xA5: FETCH_ZPG(); goto LDA;     // LDA ZP
@@ -184,31 +190,45 @@ case 0x3D: FETCH_ABX(); goto AND;     // AND ABSX
 case 0x39: FETCH_ABY(); goto AND;     // AND ABSY
 case 0x21: FETCH_INX(); goto AND;     // AND INDX
 case 0x31: FETCH_INY();               // AND INDY
-AND:
+AND:                                  // Logical "and" A with operand
+    REG_A &= operand;
+    CALC_Z(REG_A);
+    CALC_S(REG_A);
     break;
 
-case 0x0A: FETCH_ACC(); goto ;     // ASL ACC
-case 0x06: FETCH_ZPG(); goto ;     // ASL ZP
-case 0x16: FETCH_ZPX(); goto ;     // ASL ZPX
-case 0x0E: FETCH_ABS(); goto ;     // ASL ABS
-case 0x1E: FETCH_ABX(); goto ;     // ASL ABSX
-ASL:
+case 0x0A: FETCH_ACC(); goto ASL;     // ASL ACC TODO
+case 0x06: FETCH_ZPG(); goto ASL;     // ASL ZP
+case 0x16: FETCH_ZPX(); goto ASL;     // ASL ZPX
+case 0x0E: FETCH_ABS(); goto ASL;     // ASL ABS
+case 0x1E: FETCH_ABX();               // ASL ABSX
+ASL:                                  // Shift operand left 1 bit
+    tmp = operand << 1;
+    mmu_write(oper_addr, tmp);
+    CALC_C(tmp);
+    CALC_Z(tmp);
+    CALC_S(tmp);
     break;
 
-case 0x24: FETCH_ZPG(); goto ;     // BIT ZP
-case 0x2C: FETCH_ABS(); goto ;     // BIT ABS
-BIT:
+case 0x24: FETCH_ZPG(); goto BIT;     // BIT ZP
+case 0x2C: FETCH_ABS();               // BIT ABS
+BIT:                                  // TODO
+    CALC_Z(REG_A & operand);
+    REG_S = (REG_S & 0x3F)
+          | (REG_A & 0xC0);
     break;
 
-case 0x49: FETCH_IMM(); goto ;     // EOR IMM
-case 0x45: FETCH_ZPG(); goto ;     // EOR ZP
-case 0x55: FETCH_ZPX(); goto ;     // EOR ZPX
-case 0x4D: FETCH_ABS(); goto ;     // EOR ABS
-case 0x5D: FETCH_ABX(); goto ;     // EOR ABSX
-case 0x59: FETCH_ABY(); goto ;     // EOR ABSY
-case 0x41: FETCH_INX(); goto ;     // EOR INDX
-case 0x51: FETCH_INY(); goto ;     // EOR INDY
-EOR:
+case 0x49: FETCH_IMM(); goto EOR;     // EOR IMM
+case 0x45: FETCH_ZPG(); goto EOR;     // EOR ZP
+case 0x55: FETCH_ZPX(); goto EOR;     // EOR ZPX
+case 0x4D: FETCH_ABS(); goto EOR;     // EOR ABS
+case 0x5D: FETCH_ABX(); goto EOR;     // EOR ABSX
+case 0x59: FETCH_ABY(); goto EOR;     // EOR ABSY
+case 0x41: FETCH_INX(); goto EOR;     // EOR INDX
+case 0x51: FETCH_INY();               // EOR INDY
+EOR:                                  // Logical "xor" A with operand
+    REG_A ^= operand;
+    CALC_Z(REG_A);
+    CALC_S(REG_A);
     break;
 
 case 0x4A: FETCH_ACC(); goto ;     // LSR ACC

@@ -2,7 +2,7 @@
 
 mmu_t mmu;
 
-BYTE mmu_read(WORD addr)
+WORD mmu_read(WORD addr)
 {
     //TODO
     return 0x00;

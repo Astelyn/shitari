@@ -228,15 +228,19 @@ AND:                                    // Logical "and" A with operand
     CALC_S(REG_A);
     break;
 
-case 0x0A: FETCH_ACC(); goto ASL;       // ASL ACC TODO
+case 0x0A:                              // ASL ACC
+    result = (WORD)REG_A << 1;
+    REG_A = (BYTE)(result & 0x00FF);
+    goto ASL_ACC;
 case 0x06: FETCH_ZPG(); goto ASL;       // ASL ZP
 case 0x16: FETCH_ZPX(); goto ASL;       // ASL ZPX
 case 0x0E: FETCH_ABS(); goto ASL;       // ASL ABS
 case 0x1E: FETCH_ABX();                 // ASL ABSX
 ASL:                                    // Shift operand left 1 bit
-    result = operand << 1;
+    result = (WORD)operand << 1;
     mmu_write(oper_addr,
         (BYTE)(result & 0x00FF));
+ASL_ACC:
     CALC_C(result);
     CALC_Z(result);
     CALC_S(result);
@@ -264,14 +268,20 @@ EOR:                                    // Logical "xor" A with operand
     CALC_S(REG_A);
     break;
 
-case 0x4A: FETCH_ACC(); goto LSR;       // LSR ACC TODO
+case 0x4A:                              // LSR ACC
+    operand = REG_A;
+    result = REG_A >> 1;
+    REG_A = (BYTE)(result & 0x00FF);
+    goto LSR_ACC;
 case 0x46: FETCH_ZPG(); goto LSR;       // LSR ZP
 case 0x56: FETCH_ZPX(); goto LSR;       // LSR ZPX
 case 0x4E: FETCH_ABS(); goto LSR;       // LSR ABS
 case 0x5E: FETCH_ABX();                 // LSR ABSX
 LSR:                                    // Logical shift right
     result = operand >> 1;
-    mmu_write(oper_addr, result);
+    mmu_write(oper_addr,
+        (BYTE)(result & 0x00FF));
+LSR_ACC:
     if (operand & 1) SET_C();
     else CLR_C();
     CALC_Z(result);
@@ -292,7 +302,11 @@ ORA:                                    // Logical "or" A with operand
     CALC_S(REG_A);
     break;
 
-case 0x2A: FETCH_ACC(); goto ROL;       // ROL ACC TODO
+case 0x2A:                              // ROL ACC
+    result = ((WORD)REG_A << 1)
+           | (REG_S & FLAG_C);
+    REG_A = (BYTE)(result & 0x00FF);
+    goto ROL_ACC;
 case 0x26: FETCH_ZPG(); goto ROL;       // ROL ZP
 case 0x36: FETCH_ZPX(); goto ROL;       // ROL ZPX
 case 0x2E: FETCH_ABS(); goto ROL;       // ROL ABS
@@ -300,13 +314,20 @@ case 0x3E: FETCH_ABX();                 // ROL ABSX
 ROL:                                    // Rotate one bit of operand left
     result = ((WORD)operand << 1)
            | (REG_S & FLAG_C);
-    mmu_write(oper_addr, result);
+    mmu_write(oper_addr,
+        (BYTE)(result & 0x00FF));
+ROL_ACC:
     CALC_C(result);
     CALC_Z(result);
     CALC_S(result);
     break;
 
-case 0x6A: FETCH_ACC(); goto ROR;       // ROR ACC TODO
+case 0x6A:                              // ROR ACC
+    operand = REG_A;
+    result = (REG_A >> 1)
+           | ((REG_S & FLAG_C) << 7);
+    REG_A  = (BYTE)(result & 0x00FF);
+    goto ROR_ACC;
 case 0x66: FETCH_ZPG(); goto ROR;       // ROR ZP
 case 0x76: FETCH_ZPX(); goto ROR;       // ROR ZPX
 case 0x6E: FETCH_ABS(); goto ROR;       // ROR ABS
@@ -316,6 +337,7 @@ ROR:                                    // Rotate one bit of operand right
            | ((REG_S & FLAG_C) << 7);
     mmu_write(oper_addr,
         (BYTE)(operand & 0x00FF));
+ROR_ACC:
     if (operand & 1) SET_C();
     else CLR_C();
     CALC_Z(result);

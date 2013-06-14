@@ -1,20 +1,7 @@
 #include "common.h"
-#include "rom.h"
+#include "mem.h"
 
-/* Include different cartridge headers here */
-#include "rom_4k.h"
-
-/* Proprietary read functions */
-WORD (*read_funcs[])(WORD) = {
-    rom_4k_read,
-};
-
-/* Proprietary write functions */
-void (*write_funcs[])(WORD, BYTE) = {
-    rom_4k_write,
-};
-
-int rom_load(char* file)
+int mem_load_rom(char* file)
 {
     FILE* fp;
     uint64_t size;
@@ -34,12 +21,10 @@ int rom_load(char* file)
      * for now we'll just assume 4KiB unbanked.
      */
 
-    rom.type = _4K_UNBANKED;
-    
-    rom.read = read_funcs[rom.type];
-    rom.write = write_funcs[rom.type];
+    mem.prg = (BYTE*)malloc(size);
+    fread(mem.prg, 1, size, fp);
 
-    rom.mem = (BYTE*)malloc(size);
+    fclose(fp);
 }
 
 WORD mem_read(WORD addr)

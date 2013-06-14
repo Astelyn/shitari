@@ -196,7 +196,7 @@ SBC:                                    // Subtract with Carry
     CALC_C(result);
     CALC_Z(result);
     CALC_V(result);
-    CALV_S(result);
+    CALC_S(result);
 #ifndef NO_DECIMAL
     CLR_C();
     REG_A -= 0x66;
@@ -515,7 +515,7 @@ case 0x68:                              // PLA
 
 case 0x28:                              // PLP
     REG_S = PULL_BYTE() | FLAG_T;       // Pull S off stack
-    break
+    break;
 
 /* System */
 case 0x00:                              // BRK

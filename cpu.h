@@ -22,6 +22,9 @@
 #define FLAG_V 0x40 // Bit 6 -- Overflow
 #define FLAG_S 0x80 // Bit 7 -- Sign
 
+/* Base address of stack */
+#define BASE_STACK 0x100
+
 /* Fetch operand address and store the operand
  * NOTE: Accumulator addressing mode is handled
  * manually, as it just uses REG_A as the operand
@@ -127,16 +130,16 @@
 #define CLR_S() REG_S &= (~FLAG_S)
 
 /* Flag calculation */
-#define CALC_C(a) if ((a) & 0xFF00) SET_C() else CLR_C()
-#define CALC_Z(a) if ((a) & 0x00FF) CLR_Z() else SET_Z()
-#define CALC_S(a) if ((a) & 0x0080) SET_S() else CLR_S()
+#define CALC_C(a) if ((a) & 0xFF00) SET_C(); else CLR_C()
+#define CALC_Z(a) if ((a) & 0x00FF) CLR_Z(); else SET_Z()
+#define CALC_S(a) if ((a) & 0x0080) SET_S(); else CLR_S()
 #define CALC_V(a) \
-    //TODO
+    ; // TODO
 
 /* 6502 data structure */
 typedef struct {
-    BYTE a, x, y, s; // 8-bit registers
-    WORD pc, sp;     // 16-bit registers
+    BYTE a, x, y, s, sp; // 8-bit registers
+    WORD pc;             // 16-bit registers
 } cpu_t;
 
 /* Executive functions */

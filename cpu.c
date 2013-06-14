@@ -57,7 +57,7 @@ void cpu_run(int cycles)
     cycles_left = cycles;
 
     while (cycles_left > 0) {
-        opcode = mmu_read(REG_PC++);
+        opcode = MEM_READ(REG_PC++);
 
         switch (opcode) {
 #include "opcodes.h"

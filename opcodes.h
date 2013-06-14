@@ -52,21 +52,21 @@ case 0x99: FETCH_ABY(); goto STA;       // STA ABSY
 case 0x81: FETCH_INX(); goto STA;       // STA INDX
 case 0x91: FETCH_INY();                 // STA INDY
 STA:                                    // Store operand in A
-    mmu_write(oper_addr, REG_A);
+    MEM_WRITE(oper_addr, REG_A);
     break;
 
 case 0x86: FETCH_ZPG(); goto STX;       // STX ZP
 case 0x96: FETCH_ZPY(); goto STX;       // STX ZPY
 case 0x8E: FETCH_ABS();                 // STX ABS
 STX:                                    // Store operand in X
-    mmu_write(oper_addr, REG_X);
+    MEM_WRITE(oper_addr, REG_X);
     break;
 
 case 0x84: FETCH_ZPG(); goto STY;       // STY ZP
 case 0x94: FETCH_ZPX(); goto STY;       // STY ZPX
 case 0x8C: FETCH_ABS();                 // STY ABS
 STY:                                    // Store operand in Y
-    mmu_write(oper_addr, REG_Y);
+    MEM_WRITE(oper_addr, REG_Y);
     break;
 
 case 0xAA:                              // TAX
@@ -139,7 +139,7 @@ case 0xCE: FETCH_ABS(); goto DEC;       // DEC ABS
 case 0xDE: FETCH_ABX();                 // DEC ABSX
 DEC:                                    // Decrement operand by 1
     result = operand - 1;
-    mmu_write(oper_addr,
+    MEM_WRITE(oper_addr,
         (BYTE)(result & 0x00FF));
     CALC_Z(result);
     CALC_S(result);
@@ -163,7 +163,7 @@ case 0xEE: FETCH_ABS(); goto INC;       // INC ABS
 case 0xFE: FETCH_ABX();                 // INC ABSX
 INC:                                    // Increment operand by 1
     result = operand + 1;
-    mmu_write(oper_addr,
+    MEM_WRITE(oper_addr,
         (BYTE)(result & 0x00FF));
     CALC_Z(result);
     CALC_S(result);
@@ -235,7 +235,7 @@ case 0x0E: FETCH_ABS(); goto ASL;       // ASL ABS
 case 0x1E: FETCH_ABX();                 // ASL ABSX
 ASL:                                    // Shift operand left 1 bit
     result = (WORD)operand << 1;
-    mmu_write(oper_addr,
+    MEM_WRITE(oper_addr,
         (BYTE)(result & 0x00FF));
 ASL_ACC:
     CALC_C(result);
@@ -276,7 +276,7 @@ case 0x4E: FETCH_ABS(); goto LSR;       // LSR ABS
 case 0x5E: FETCH_ABX();                 // LSR ABSX
 LSR:                                    // Logical shift right
     result = operand >> 1;
-    mmu_write(oper_addr,
+    MEM_WRITE(oper_addr,
         (BYTE)(result & 0x00FF));
 LSR_ACC:
     if (operand & 1) SET_C();
@@ -311,7 +311,7 @@ case 0x3E: FETCH_ABX();                 // ROL ABSX
 ROL:                                    // Rotate one bit of operand left
     result = ((WORD)operand << 1)
            | (REG_S & FLAG_C);
-    mmu_write(oper_addr,
+    MEM_WRITE(oper_addr,
         (BYTE)(result & 0x00FF));
 ROL_ACC:
     CALC_C(result);
@@ -332,7 +332,7 @@ case 0x7E: FETCH_ABX();                 // ROR ABSX
 ROR:                                    // Rotate one bit of operand right
     result = (operand >> 1)
            | ((REG_S & FLAG_C) << 7);
-    mmu_write(oper_addr,
+    MEM_WRITE(oper_addr,
         (BYTE)(operand & 0x00FF));
 ROR_ACC:
     if (operand & 1) SET_C();
@@ -523,8 +523,8 @@ case 0x00:                              // BRK
     PUSH_WORD(REG_PC);
     PUSH_BYTE(REG_S | FLAG_B);
     SET_I();
-    REG_PC = mmu_read(0xFFFE)
-           | (mmu_read(0xFFFF) << 8);
+    REG_PC = MEM_READ(0xFFFE)
+           | (MEM_READ(0xFFFF) << 8);
     break;
 
 case 0xEA:                              // NOP

@@ -1,6 +1,9 @@
 /* This is where the current opcode is
  * decoded -- this file is included within
  * a switch construct in cpu.c.
+ * TODO: Cycle penalties
+ * TODO: Check FLAG_C on shift ops
+ * TODO: Check operand casts
  */
 
 /* Storage */
@@ -254,93 +257,135 @@ EOR:                                  // Logical "xor" A with operand
     CALC_S(REG_A);
     break;
 
-case 0x4A: FETCH_ACC(); goto ;     // LSR ACC
-case 0x46: FETCH_ZPG(); goto ;     // LSR ZP
-case 0x56: FETCH_ZPX(); goto ;     // LSR ZPX
-case 0x4E: FETCH_ABS(); goto ;     // LSR ABS
-case 0x5E: FETCH_ABX(); goto ;     // LSR ABSX
-LSR:
+case 0x4A: FETCH_ACC(); goto LSR;     // LSR ACC
+case 0x46: FETCH_ZPG(); goto LSR;     // LSR ZP
+case 0x56: FETCH_ZPX(); goto LSR;     // LSR ZPX
+case 0x4E: FETCH_ABS(); goto LSR;     // LSR ABS
+case 0x5E: FETCH_ABX();               // LSR ABSX
+LSR:                                  // Logical shift right
+    result = operand >> 1;
+    mmu_write(oper_addr, result);
+    if (operand & 1) SET_C();
+    else CLR_C();
+    CALC_Z(result);
+    CALC_S(result);
     break;
 
-case 0x09: FETCH_IMM(); goto ;     // ORA IMM
-case 0x05: FETCH_ZPG(); goto ;     // ORA ZP
-case 0x15: FETCH_ZPX(); goto ;     // ORA ZPX
-case 0x0D: FETCH_ABS(); goto ;     // ORA ABS
-case 0x1D: FETCH_ABX(); goto ;     // ORA ABSX
-case 0x19: FETCH_ABY(); goto ;     // ORA ABSY
-case 0x01: FETCH_INX(); goto ;     // ORA INDX
-case 0x11: FETCH_INY(); goto ;     // ORA INDY
-ORA:
+case 0x09: FETCH_IMM(); goto ORA;     // ORA IMM
+case 0x05: FETCH_ZPG(); goto ORA;     // ORA ZP
+case 0x15: FETCH_ZPX(); goto ORA;     // ORA ZPX
+case 0x0D: FETCH_ABS(); goto ORA;     // ORA ABS
+case 0x1D: FETCH_ABX(); goto ORA;     // ORA ABSX
+case 0x19: FETCH_ABY(); goto ORA;     // ORA ABSY
+case 0x01: FETCH_INX(); goto ORA;     // ORA INDX
+case 0x11: FETCH_INY();               // ORA INDY
+ORA:                                  // Logical "or" A with operand
+    REG_A |= operand;
+    CALC_Z(REG_A);
+    CALC_S(REG_A);
     break;
 
-case 0x2A: FETCH_ACC(); goto ;     // ROL ACC
-case 0x26: FETCH_ZPG(); goto ;     // ROL ZP
-case 0x36: FETCH_ZPX(); goto ;     // ROL ZPX
-case 0x2E: FETCH_ABS(); goto ;     // ROL ABS
-case 0x3E: FETCH_ABX(); goto ;     // ROL ABSX
-ROL:
+case 0x2A: FETCH_ACC(); goto ROL;     // ROL ACC TODO
+case 0x26: FETCH_ZPG(); goto ROL;     // ROL ZP
+case 0x36: FETCH_ZPX(); goto ROL;     // ROL ZPX
+case 0x2E: FETCH_ABS(); goto ROL;     // ROL ABS
+case 0x3E: FETCH_ABX();               // ROL ABSX
+ROL:                                  // Rotate one bit of operand left
+    result = ((WORD)operand << 1)
+           | (REG_S & FLAG_C);
+    mmu_write(oper_addr, result);
+    CALC_C(result);
+    CALC_Z(result);
+    CALC_S(result);
     break;
 
-case 0x6A: FETCH_ACC(); goto ;     // ROR ACC
-case 0x66: FETCH_ZPG(); goto ;     // ROR ZP
-case 0x76: FETCH_ZPX(); goto ;     // ROR ZPX
-case 0x6E: FETCH_ABS(); goto ;     // ROR ABS
-case 0x7E: FETCH_ABX(); goto ;     // ROR ABSX
-ROR:
+case 0x6A: FETCH_ACC(); goto ROR;     // ROR ACC TODO
+case 0x66: FETCH_ZPG(); goto ROR;     // ROR ZP
+case 0x76: FETCH_ZPX(); goto ROR;     // ROR ZPX
+case 0x6E: FETCH_ABS(); goto ROR;     // ROR ABS
+case 0x7E: FETCH_ABX();               // ROR ABSX
+ROR:                                  // Rotate one bit of operand right
+    result = (operand >> 1)
+           | ((REG_S & FLAG_C) << 7);
+    mmu_write(oper_addr, (BYTE)(operand & 0x00FF));
+    if (operand & 1) SET_C();
+    else CLR_C();
+    CALC_Z(result);
+    CALC_S(result);
     break;
 
 /* Branch */
-case 0x90: FETCH_(); goto ;     // BCC
-case 0xB0: FETCH_(); goto ;     // BCS
-case 0xF0: FETCH_(); goto ;     // BEQ
-case 0x30: FETCH_(); goto ;     // BMI
-case 0xD0: FETCH_(); goto ;     // BNE
-case 0x10: FETCH_(); goto ;     // BPL
-case 0x50: FETCH_(); goto ;     // BVC
-case 0x70: FETCH_(); goto ;     // BVS
+case 0x90: FETCH_();     // BCC
+case 0xB0: FETCH_();     // BCS
+case 0xF0: FETCH_();     // BEQ
+case 0x30: FETCH_();     // BMI
+case 0xD0: FETCH_();     // BNE
+case 0x10: FETCH_();     // BPL
+case 0x50: FETCH_();     // BVC
+case 0x70: FETCH_();     // BVS
 
 /* Jump */
-case 0x6C: FETCH_IND(); goto ;     // JMP IND
-case 0x4C: FETCH_ABS(); goto ;     // JMP ABS
+case 0x6C: FETCH_IND(); goto JMP;     // JMP IND
+case 0x4C: FETCH_ABS();               // JMP ABS
 JMP:
+    REG_PC = oper_addr;
     break;
 
-case 0x20: FETCH_(); goto ;     // JSR
-case 0x40: FETCH_(); goto ;     // RTI
-case 0x60: FETCH_(); goto ;     // RTS
+case 0x20: FETCH_(); goto ;           // JSR
+case 0x40: FETCH_(); goto ;           // RTI
+case 0x60: FETCH_(); goto ;           // RTS
 
 /* Registers */
-case 0x18: FETCH_(); goto ;     // CLC
-case 0xD8: FETCH_(); goto ;     // CLD
-case 0x58: FETCH_(); goto ;     // CLI
-case 0xB8: FETCH_(); goto ;     // CLV
+case 0x18:                            // CLC
+    CLR_C();                          // Clear C flag
+    break;
 
-case 0xC9: FETCH_IMM(); goto ;     // CMP IMM
-case 0xC5: FETCH_ZPG(); goto ;     // CMP ZP
-case 0xD5: FETCH_ZPX(); goto ;     // CMP ZPX
-case 0xCD: FETCH_ABS(); goto ;     // CMP ABS
-case 0xDD: FETCH_ABX(); goto ;     // CMP ABSX
-case 0xD9: FETCH_ABY(); goto ;     // CMP ABSY
-case 0xC1: FETCH_INX(); goto ;     // CMP INDX
-case 0xD1: FETCH_INY(); goto ;     // CMP INDY
+case 0xD8:                            // CLD
+    CLR_D();                          // Clear D flag
+    break;
+
+case 0x58:                            // CLI
+    CLR_I();                          // Clear I flag
+    break;
+
+case 0xB8:                            // CLV
+    CLR_V();                          // Clear V flag
+    break;
+
+case 0xC9: FETCH_IMM(); goto CMP;     // CMP IMM
+case 0xC5: FETCH_ZPG(); goto CMP;     // CMP ZP
+case 0xD5: FETCH_ZPX(); goto CMP;     // CMP ZPX
+case 0xCD: FETCH_ABS(); goto CMP;     // CMP ABS
+case 0xDD: FETCH_ABX(); goto CMP;     // CMP ABSX
+case 0xD9: FETCH_ABY(); goto CMP;     // CMP ABSY
+case 0xC1: FETCH_INX(); goto CMP;     // CMP INDX
+case 0xD1: FETCH_INY();               // CMP INDY
 CMP:
     break;
 
-case 0xE0: FETCH_IMM(); goto ;     // CPX IMM
-case 0xE4: FETCH_ZPG(); goto ;     // CPX ZP
-case 0xEC: FETCH_ABS(); goto ;     // CPX ABS
+case 0xE0: FETCH_IMM(); goto CPX;     // CPX IMM
+case 0xE4: FETCH_ZPG(); goto CPX;     // CPX ZP
+case 0xEC: FETCH_ABS();               // CPX ABS
 CPX:
     break;
 
-case 0xC0: FETCH_IMM(); goto ;     // CPY IMM
-case 0xC4: FETCH_ZPG(); goto ;     // CPY ZP
-case 0xCC: FETCH_ABS(); goto ;     // CPY ABS
+case 0xC0: FETCH_IMM(); goto CPY;     // CPY IMM
+case 0xC4: FETCH_ZPG(); goto CPY;     // CPY ZP
+case 0xCC: FETCH_ABS();               // CPY ABS
 CPY:
     break;
 
-case 0x38: FETCH_(); goto ;     // SEC
-case 0xF8: FETCH_(); goto ;     // SED
-case 0x78: FETCH_(); goto ;     // SEI
+case 0x38:                            // SEC
+    SET_C();                          // Set C flag
+    break;
+
+case 0xF8:                            // SED
+    SET_D();                          // Set D flag
+    break;
+
+case 0x78:                            // SEI
+    SET_I();                          // Set I flag
+    break;
 
 /* Stack */
 case 0x48: FETCH_(); goto ;     // PHA
@@ -350,5 +395,7 @@ case 0x28: FETCH_(); goto ;     // PLP
 
 /* System */
 case 0x00: FETCH_(); goto ;     // BRK
-case 0xEA: FETCH_(); goto ;     // NOP
+
+case 0xEA: FETCH_();                  // NOP
+    break;                            // No operation
 

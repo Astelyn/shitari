@@ -1,11 +1,6 @@
 #ifndef _ROM_H
 #define _ROM_H
 
-#include "common.h"
-
-#define MEM_READ(a) rom.read(a)
-#define MEM_WRITE(a, b) rom.write(a, b)
-
 /* Cartridge format */
 typedef enum {
     _4K_UNBANKED // 4KiB unbanked -- rom_4k.h
@@ -22,6 +17,9 @@ typedef struct {
 extern rom_t rom;
 
 int rom_load(char* file);
+
+WORD mem_read(WORD addr);
+void mem_write(WORD addr, BYTE val);
 
 #endif
 

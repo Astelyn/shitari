@@ -1,9 +1,6 @@
 #ifndef _CPU_H
 #define _CPU_H
 
-#include "common.h"
-#include "rom.h"
-
 /* Register accessors */
 #define REG_A  (cpu.a)  // Accumulator
 #define REG_X  (cpu.x)  // X register
@@ -34,81 +31,81 @@
 // Immediate -- nn
 #define FETCH_IMM() \
     oper_addr = REG_PC++; \
-    operand = MEM_READ(oper_addr)
+    operand = mem_read(oper_addr)
 
 // Zero Page -- [nn]
 #define FETCH_ZPG() \
-    oper_addr = MEM_READ(REG_PC++); \
-    operand = MEM_READ(oper_addr)
+    oper_addr = mem_read(REG_PC++); \
+    operand = mem_read(oper_addr)
 
 // Zero Page, X -- [nn + X]
 #define FETCH_ZPX() \
-    oper_addr = MEM_READ(REG_PC++) + (WORD)REG_X; \
-    operand = MEM_READ(oper_addr)
+    oper_addr = mem_read(REG_PC++) + (WORD)REG_X; \
+    operand = mem_read(oper_addr)
 
 // Zero Page, Y -- [nn + Y]
 #define FETCH_ZPY() \
-    oper_addr = MEM_READ(REG_PC++) + (WORD)REG_Y; \
-    operand = MEM_READ(oper_addr)
+    oper_addr = mem_read(REG_PC++) + (WORD)REG_Y; \
+    operand = mem_read(oper_addr)
 
 // Absolute -- [nnnn]
 #define FETCH_ABS() \
-    oper_addr = MEM_READ(REG_PC) \
-              | (MEM_READ(REG_PC + 1) << 8); \
+    oper_addr = mem_read(REG_PC) \
+              | (mem_read(REG_PC + 1) << 8); \
     REG_PC += 2; \
-    operand = MEM_READ(oper_addr)
+    operand = mem_read(oper_addr)
 
 // Absolute, X -- [nnnn + X]
 #define FETCH_ABX() \
-    oper_addr = (MEM_READ(REG_PC) \
-              | (MEM_READ(REG_PC + 1) << 8)) \
+    oper_addr = (mem_read(REG_PC) \
+              | (mem_read(REG_PC + 1) << 8)) \
               + (WORD)REG_X; \
     REG_PC += 2; \
-    operand = MEM_READ(oper_addr)
+    operand = mem_read(oper_addr)
 
 // Absolute, Y -- [nnnn + Y]
 #define FETCH_ABY() \
-    oper_addr = (MEM_READ(REG_PC) \
-              | (MEM_READ(REG_PC + 1) << 8)) \
+    oper_addr = (mem_read(REG_PC) \
+              | (mem_read(REG_PC + 1) << 8)) \
               + (WORD)REG_Y; \
     REG_PC += 2; \
-    operand = MEM_READ(oper_addr)
+    operand = mem_read(oper_addr)
 
 // Indirect -- [[nn]]
 #define FETCH_IND() \
-    oper_addr = MEM_READ(MEM_READ(REG_PC++)); \
-    operand = MEM_READ(oper_addr)
+    oper_addr = mem_read(mem_read(REG_PC++)); \
+    operand = mem_read(oper_addr)
 
 // (Indirect, X) -- [[nn + X]]
 #define FETCH_INX() \
-    oper_addr = MEM_READ(MEM_READ(REG_PC++)) \
+    oper_addr = mem_read(mem_read(REG_PC++)) \
               + (WORD)REG_X; \
-    operand = MEM_READ(oper_addr)
+    operand = mem_read(oper_addr)
 
 // (Indirect), Y -- [[nn] + Y]
 #define FETCH_INY() \
-    oper_addr = MEM_READ(MEM_READ(REG_PC++)); \
-    operand = MEM_READ(oper_addr + (WORD)REG_Y)
+    oper_addr = mem_read(mem_read(REG_PC++)); \
+    operand = mem_read(oper_addr + (WORD)REG_Y)
 
 // Relative -- used for branch instructions
 #define FETCH_REL() \
-    oper_addr = MEM_READ(REG_PC++); \
+    oper_addr = mem_read(REG_PC++); \
     if (oper_addr & 0x80) oper_addr |= 0xFF00
 
 /* Stack operation macros */
 #define PUSH_BYTE(a) \
-    MEM_WRITE(BASE_STACK + REG_SP--, (a))
+    mem_write(BASE_STACK + REG_SP--, (a))
 
 #define PUSH_WORD(a) \
-    MEM_WRITE(BASE_STACK + REG_SP, ((a) >> 8) & 0xFF); \
-    MEM_WRITE(BASE_STACK + ((REG_SP - 1) & 0xFF), (a) & 0xFF)
+    mem_write(BASE_STACK + REG_SP, ((a) >> 8) & 0xFF); \
+    mem_write(BASE_STACK + ((REG_SP - 1) & 0xFF), (a) & 0xFF)
 
 #define PULL_BYTE() \
-    (BYTE)(MEM_READ(BASE_STACK + ++REG_SP) & 0x00FF)
+    (BYTE)(mem_read(BASE_STACK + ++REG_SP) & 0x00FF)
 
 #define PULL_WORD() \
-    MEM_READ(BASE_STACK + (++REG_SP)) \
-    | (MEM_READ(BASE_STACK + (++REG_SP)) << 8)
+    mem_read(BASE_STACK + (++REG_SP)) \
+    | (mem_read(BASE_STACK + (++REG_SP)) << 8)
 
 
 /* Status flag mutators */
@@ -148,6 +145,9 @@ extern cpu_t cpu;
 void cpu_init(void);
 void cpu_stop(void);
 void cpu_run(int cycles);
+
+extern WORD mem_read(WORD addr); 
+extern void mem_write(WORD addr, BYTE val);
 
 #endif
 

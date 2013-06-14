@@ -1,3 +1,4 @@
+#include "common.h"
 #include "rom.h"
 
 /* Include different cartridge headers here */
@@ -39,5 +40,15 @@ int rom_load(char* file)
     rom.write = write_funcs[rom.type];
 
     rom.mem = (BYTE*)malloc(size);
+}
+
+WORD mem_read(WORD addr)
+{
+
+}
+
+void mem_write(WORD addr, BYTE val)
+{
+
 }
 

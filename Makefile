@@ -7,13 +7,13 @@ shitari: main.o cpu.o rom.o
 	$(CC) main.o cpu.o rom.o -o shitari
 
 main.o: main.c
-	$(CC) $(CFLAGS) main.c
+	$(CC) $(CFLAGS) -Irom -Icpu main.c
 
-cpu.o: cpu.c
-	$(CC) $(CFLAGS) cpu.c
+cpu.o: cpu/cpu.c
+	$(CC) $(CFLAGS) -I. cpu/cpu.c
 
-rom.o: rom.c
-	$(CC) $(CFLAGS) rom.c
+rom.o: rom/rom.c
+	$(CC) $(CFLAGS) -I. rom/rom.c
 
 clean:
 	rm -rf *.o

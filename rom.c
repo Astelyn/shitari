@@ -1,5 +1,18 @@
 #include "rom.h"
 
+/* Include different cartridge headers here */
+#include "rom_4k.h"
+
+/* Proprietary read functions */
+WORD (*read_funcs[])(WORD) = {
+    rom_4k_read,
+};
+
+/* Proprietary write functions */
+void (*write_funcs[])(WORD, BYTE) = {
+    rom_4k_write,
+};
+
 int rom_load(char* file)
 {
     FILE* fp;

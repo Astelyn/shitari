@@ -1,8 +1,5 @@
 #include "cpu.h"
 
-/* Global CPU structure */
-cpu_t cpu;
-
 /* Helper variables */
 static BYTE opcode;
 static BYTE operand;

@@ -19,21 +19,7 @@ typedef struct {
     void (*write)(WORD, BYTE); // Pointer to proprietary write function
 } rom_t;
 
-/* Global ROM */
-rom_t rom;
-
-/* Include different cartridge headers here */
-#include "rom_4k.h"
-
-/* Proprietary read functions */
-WORD (*read_funcs[])(WORD) = {
-    rom_4k_read,
-};
-
-/* Proprietary write functions */
-void (*write_funcs[])(WORD, BYTE) = {
-    rom_4k_write,
-};
+extern rom_t rom;
 
 int rom_load(char* file);
 

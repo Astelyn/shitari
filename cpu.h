@@ -142,6 +142,8 @@ typedef struct {
     WORD pc;             // 16-bit registers
 } cpu_t;
 
+extern cpu_t cpu;
+
 /* Executive functions */
 void cpu_init(void);
 void cpu_stop(void);

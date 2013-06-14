@@ -85,7 +85,28 @@
 // (Indirect), Y -- [[nn] + Y]
 #define FETCH_INY() \
     oper_addr = mmu_read(mmu_read(REG_PC++)); \
-    operand = mmu_read(oper_addr + (WORD)REG_Y);
+    operand = mmu_read(oper_addr + (WORD)REG_Y)
+
+// Relative -- used for branch instructions
+#define FETCH_REL() \
+    oper_addr = mmu_read(REG_PC++); \
+    if (oper_addr & 0x80) oper_addr |= 0xFF00
+
+/* Stack operation macros */
+#define PUSH_BYTE(a) \
+    mmu_write(BASE_STACK + REG_SP--, (a))
+
+#define PUSH_WORD(a) \
+    mmu_write(BASE_STACK + REG_SP, ((a) >> 8) & 0xFF); \
+    mmu_write(BASE_STACK + ((REG_SP - 1) & 0xFF), (a) & 0xFF)
+
+#define PULL_BYTE() \
+    (BYTE)(mmu_read(BASE_STACK + ++REG_SP) & 0x00FF)
+
+#define PULL_WORD() \
+    mmu_read(BASE_STACK + (++REG_SP)) \
+    | (mmu_read(BASE_STACK + (++REG_SP)) << 8)
+
 
 /* Status flag mutators */
 // Set flag

@@ -4,10 +4,7 @@
  * (The goto's are purely for efficiency)
  *
  * TODO: Cycle penalties
- * TODO: Check FLAG_C on shift ops
  * TODO: Check operand casts
- * TODO: Implement FETCH_REL()
- * TODO: Implement PUSH_BYTE()/PULL_BYTE()/PUSH_WORD()/PULL_WORD()
  */
 
 /* Storage */
